@@ -19,7 +19,7 @@ if [ -z "$key" ]; then
     stty $stty_orig     # restore terminal setting.
 fi
 
-s=$(echo "$site" | sed -e 's/.*:\/\///' -e 's/[^\/]*\b\([a-zA-Z0-9]\+\)\.\([a-zA-Z]\+\).*/\L\1.\2/')
+s=$(echo "$site" | sed -e 's/.*:\/\///' -e 's/[^\/]*\b\([a-zA-Z0-9\-]\+\)\.\([a-zA-Z]\+\).*/\L\1.\2/')
 if [ "$s" != "$site" ]; then
     site="$s"
     echo $site

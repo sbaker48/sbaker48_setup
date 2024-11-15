@@ -1,0 +1,44 @@
+#!/bin/bash
+# Usage: grep -rn foo | nppall
+
+/cygdrive/c/Strawberry/perl/bin/perl <<'END_PERL'
+use strict;
+
+print "This doesn't work.\n";
+
+chomp( my $np=qx/cygpath "C:\\Program Files\\Notepad++\\notepad++.exe"/ );
+my %filelist = ();
+
+while (<>)
+{
+    if ( /:[0-9]*:/ )
+    {
+        (my $f, my $n) = /^([^:]*):([0-9]*):/;
+     
+		print "$f\n";
+	 
+        if ( !defined($filelist{$f}) )
+        {
+            $filelist{$f} = $n;
+        }
+    }
+    else
+    {
+        $filelist{$_} = "";
+    }    
+}
+
+foreach my $f (%filelist)
+{
+	print $f;
+	
+    if ( $filelist{$f} )
+    {
+        chomp( my $ff = qx/cygpath -wa \$(realpath -L "$f")/ );
+        system("\"$np\" \"$ff\" -n$filelist{$f}");
+    }
+    else
+    {
+    }
+}
+END_PERL

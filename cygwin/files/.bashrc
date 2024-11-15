@@ -120,3 +120,7 @@ export -f which
 
 umask 022
 
+if ! ps -a | grep ssh-agent > /dev/null; then
+    eval $(ssh-agent)
+fi
+

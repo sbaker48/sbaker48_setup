@@ -8,6 +8,7 @@ tabs=0
 clean=0
 cleanext=0
 nochange=0
+verbose=0
 
 
 function usage()
@@ -23,11 +24,12 @@ function usage()
     echo "    -c              Clean the text file, removing any stray non-printable characters"
     echo "    -C              Clean the text file, also removing any extended ASCII characters (bytes >= 0x80)"
     echo "    -x              Do not modify files, just display changes"
+    echo "    -v              Verbose mode."
     echo ""
 }
 
 
-OPTS=$(getopt -n noms -o dfFhtT:cCx -l dos,help,trim,tabs: -- "$@")
+OPTS=$(getopt -n noms -o dfFhtT:cCxv -l dos,help,trim,tabs: -- "$@")
 
 if [ "$?" != "0" ]; then
     usage 1>&2
@@ -57,6 +59,7 @@ do
             -c)         clean=1; shift;;
             -C)         clean=1; cleanext=1; shift;;
             -x)         nochange=1; shift;;
+        -v)         verbose=1; shift;;
 
             -*)    echo "$0: Unknown option: $arg"; shift;;
              *)    break;;
@@ -91,18 +94,37 @@ for f; do
             xpr=''
 
 
-            if [ $dos = 0 ]; then
-                if [ $trim = 0 ]; then
-                    xpr='s/[\x0d\x0a]+/\x0a/g;'
-                else
-                    xpr='s/[ \t]*[\x0d\x0a]+/\x0a/g;'
-                fi
+#            if [ $dos = 0 ]; then
+#                if [ $trim = 0 ]; then
+#                    xpr='s/[\x0d\x0a]+/\x0a/g;'
+#                else
+#                    xpr='s/[ \t]*[\x0d\x0a]+/\x0a/g;'
+#                fi
+#            else
+#                if [ $trim = 0 ]; then
+#                    xpr='s/[\x0d\x0a]+/\x0d\x0a/g;'
+#                else
+#                    xpr='s/[ \t]*[\x0d\x0a]+/\x0d\x0a/g;'
+#                fi
+#            fi
+
+
+
+# This doesn't work right in Strawbery Perl
+#			if [ $dos = 0 ]; then
+#			    xpr="s/\r$//;"
+#			fi
+
+			if [ $dos = 0 ]; then
+			    xpr="BEGIN { binmode STDOUT }"
+			else
+				:
+			fi
+
+            if [ $trim = 0 ]; then
+				:
             else
-                if [ $trim = 0 ]; then
-                    xpr='s/[\x0d\x0a]+/\x0d\x0a/g;'
-                else
-                    xpr='s/[ \t]*[\x0d\x0a]+/\x0d\x0a/g;'
-                fi
+                xpr="${xpr} s/[ \t]*$//g;"
             fi
 
             if [ $clean -gt 0 ]; then
@@ -116,6 +138,11 @@ for f; do
             if [ $tabs -gt 0 ]; then
                 xpr="${xpr} 1 while s/\t+/' ' x (length(\$&)*${tabs} - length(\$\`)%${tabs})/e;"
             fi
+
+			if [ $verbose -gt 0 ]; then
+				echo
+				echo perl -pe \""${xpr}"\"
+			fi
 
             /bin/cat "$f" | perl -pe "${xpr}" > "$t" || exit 1
 

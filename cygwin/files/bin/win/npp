@@ -1,0 +1,28 @@
+#!/bin/bash
+
+shopt -s nocasematch
+
+np=$(cygpath "C:\Program Files\Notepad++\notepad++.exe")
+if [ ! -r "$np" ]; then
+  exit 2
+fi
+
+declare -a args
+
+if [ -z "${*}" ]; then
+    "${np}" &
+else
+    for f in "${@}"; do
+        if [ -n "$f" ]; then
+            if [ "${f:0:1}" = "-" ]; then
+                args[${#args[@]}]="$f"
+            else
+				rp=$(realpath -L "$f")
+                ff=$(cygpath -wa "$rp")
+                args[${#args[@]}]="$ff"
+            fi
+        fi
+    done
+
+    "${np}" "${args[@]}" &
+fi
