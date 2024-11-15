@@ -1,0 +1,13 @@
+#!/bin/bash
+
+for f in ./cygwin/files/.[a-z]* ./cygwin/files/[a-z]*; do
+  cp -ri "$f" "${HOME}"
+done
+
+cd ${HOME}
+ln -s "$(cygpath --desktop)"
+ln -s "$(cygpath --mydocs)"
+ln -s "$(cygpath --folder 38)"
+ln -s "$(cygpath --folder 42)"
+ln -s "$(realpath $(cygpath --desktop)/../Downloads)"
+

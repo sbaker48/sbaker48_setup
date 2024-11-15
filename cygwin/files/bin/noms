@@ -1,0 +1,156 @@
+#!/bin/bash
+
+force=0
+force2=0
+dos=0
+trim=0
+tabs=0
+clean=0
+cleanext=0
+nochange=0
+
+
+function usage()
+{
+    echo "Usage: noms [OPTIONS] [FILE]..."
+    echo ""
+    echo "    -d, --dos       Convert to DOS line endings (default is UNIX style line endings)"
+    echo "    -f              Force conversion of non-text files"
+    echo "    -F              Force conversion when non-whitespace changes are detected"
+    echo "    -h, --help      Display this help"
+    echo "    -t, --trim      Trim trailing spaces from each line"
+    echo "    -T, --tabs=NUM  Replace tab characters with up to NUM spaces to align with a column multiple of NUM"
+    echo "    -c              Clean the text file, removing any stray non-printable characters"
+    echo "    -C              Clean the text file, also removing any extended ASCII characters (bytes >= 0x80)"
+    echo "    -x              Do not modify files, just display changes"
+    echo ""
+}
+
+
+OPTS=$(getopt -n noms -o dfFhtT:cCx -l dos,help,trim,tabs: -- "$@")
+
+if [ "$?" != "0" ]; then
+    usage 1>&2
+    exit 1
+fi
+
+eval set -- "$OPTS"
+
+aa=
+for arg
+do
+    if [ "x$aa" != "x" ]; then
+        typeset $aa="$arg"
+        shift;
+        aa=
+    else
+        case "$arg" in
+            --)    shift; break;;
+
+            -h|--help)  usage; exit 0;;
+
+            -d|--dos)   dos=1; shift;;
+            -f)         force=1; shift;;
+            -F)         force2=1; shift;;
+            -t|--trim)  trim=1; shift;;
+            -T|--tabs)  aa=tabs; shift;;
+            -c)         clean=1; shift;;
+            -C)         clean=1; cleanext=1; shift;;
+            -x)         nochange=1; shift;;
+
+            -*)    echo "$0: Unknown option: $arg"; shift;;
+             *)    break;;
+        esac
+    fi
+done
+
+
+
+
+for f; do
+
+    echo -n "$f"
+
+    if [ ! -r "$f" ]; then
+        echo " ...skipping unreadable file"
+    elif [ $nochange -eq 0 -a ! -w "$f" ]; then
+        echo " ...skipping read-only file"
+    else
+
+
+        b0=$(stat --format="%s" "$f")
+
+        if [ $force -eq 1 ] || [ -n "$(/usr/bin/file -b "$f" | grep 'text')" ]; then
+#            t=`/bin/tempfile -p noms`
+            t=`mktemp`
+            if [ ! -w "$t" ]; then
+                echo " ...could not create temporary file"
+                exit 1
+            fi
+
+            xpr=''
+
+
+            if [ $dos = 0 ]; then
+                if [ $trim = 0 ]; then
+                    xpr='s/[\x0d\x0a]+/\x0a/g;'
+                else
+                    xpr='s/[ \t]*[\x0d\x0a]+/\x0a/g;'
+                fi
+            else
+                if [ $trim = 0 ]; then
+                    xpr='s/[\x0d\x0a]+/\x0d\x0a/g;'
+                else
+                    xpr='s/[ \t]*[\x0d\x0a]+/\x0d\x0a/g;'
+                fi
+            fi
+
+            if [ $clean -gt 0 ]; then
+                if [ $cleanext -gt 0 ]; then
+                    xpr="${xpr} s/[\x00-\x08\x0B\x0C\x0E-\x1F\x80-\xFF]//g;"
+                else
+                    xpr="${xpr} s/[\x00-\x08\x0B\x0C\x0E-\x1F]//g;"
+                fi
+            fi
+
+            if [ $tabs -gt 0 ]; then
+                xpr="${xpr} 1 while s/\t+/' ' x (length(\$&)*${tabs} - length(\$\`)%${tabs})/e;"
+            fi
+
+            /bin/cat "$f" | perl -pe "${xpr}" > "$t" || exit 1
+
+            if [ -z "$(cat -vE "$t" | tail -n 1 | grep '$$')" ]; then
+                echo -n " ...appending newline..."
+
+                if [ $dos = 0 ]; then
+                    echo >> "$t"
+                else
+                    echo -e "\0015" >> "$t"
+                fi
+            fi
+
+            b1=$(stat --format="%s" "$t")
+            delt=$(($b1-$b0))
+
+            if [ $force2 -eq 1 ] || diff -w -q "$t" "$f" > /dev/null; then
+                if diff -q "$t" "$f" > /dev/null; then
+                    echo -n " ...no changes"
+                else
+                    echo -n " ...replacing [${b0} -> ${b1} (${delt})]"
+                    if [ $nochange -eq 0 ]; then
+                        /bin/cat "$t" > "$f" || continue
+                    fi
+                fi
+            else
+                echo -n " ...not replacing $f, contents differ (use -F to force)"
+            fi
+
+            /bin/rm "$t"
+        else
+            echo -n " ...skipping $f (use -f to force)"
+        fi
+        echo "."
+    fi
+
+done
+

@@ -1,0 +1,122 @@
+#!/bin/bash
+# -x
+
+np=/cygdrive/c/windows/system32/notepad
+if [ ! -r "$np" ]; then
+    exit 2
+fi
+
+if [ -z "${*}" ]; then
+    "${np}"
+else
+    for f in "${@}"; do
+
+        ok=1
+        tmp=
+        forig=
+
+        if [ -r "${f}" ]; then
+
+            text=1
+            dos=1
+            size=0
+
+            if [ ! -s "${f}" ]; then
+                text=1
+                dos=1
+            elif [ -n "$(head --bytes=1024 "${f}" | tr -d '[:print:][:space:]')" ]; then
+                text=0
+                dos=0
+            elif ! od -tx1 -An -N1024 -w1024 -v "${f}" | grep --quiet "0d 0a"; then
+                dos=0
+            fi
+
+            size=$(stat --format="%s" "${f}")
+
+            if [ $ok -eq 1 ]; then
+                if [ $size -gt 16777216 ]; then
+
+                    ok=0
+                    echo -n "File '${f}' is very large and will take a long time to load. Continue? (y/N) "
+                    if read ans; then
+                        if echo "${ans}n" | grep --quiet -i '^y'; then
+                            ok=1
+                        fi
+                    fi
+
+                fi
+            fi
+
+            if [ $ok -eq 1 ]; then
+
+                if [ ${text} -eq 0 ]; then
+                    ok=0
+                    echo -n "File '${f}' is not a text file. Display hex dump? (y/N) "
+                    if read ans; then
+                        if echo "${ans}n" | grep --quiet -i '^y'; then
+                            tmp=$(mktemp /tmp/notepad.XXXXXXXX)
+                            hexdump -C "${f}" | perl -pe 's/[ \t]*[\x0d\x0a]+/\x0d\x0a/g' > "${tmp}"
+                            f=${tmp}
+                            ok=1
+                        fi
+                    fi
+
+                elif [ ${dos} -eq 0 ]; then
+                    ok=0
+                    echo -n "File '${f}' does not contain DOS line endings. Convert? (Y/n) "
+                    if read ans; then
+                        if echo "${ans}y" | grep --quiet -i '^y'; then
+                            tmp=$(mktemp /tmp/notepad.XXXXXXXX)
+                            cat "${f}" | perl -pe 's/[\x0d\x0a]+/\x0d\x0a/g;' > "${tmp}"
+                            forig=${f}
+                            f=${tmp}
+                            ok=1
+                        else
+                            ok=1
+                        fi
+                    fi
+                fi
+
+            fi
+        fi
+
+        if [ $ok -eq 1 ]; then
+
+            if [ -n "${f}" ]; then
+                fwin=$(cygpath -wa "${f}")
+            fi
+
+            t0=$(stat -c "%Y" "${f}")
+
+            if [ -z "${tmp}" ]; then
+                "${np}" "${fwin}" &
+            else
+
+                # Notepad is editing a temporary file.
+                # Start notepad and wait for it to exit, so that any changes can be copied back to the original.
+                "${np}" "${fwin}"
+
+                if [ -n "${forig}" ]; then
+                    t=$(stat -c "%Y" "${f}")
+                    if [ $t -ne $t0 ]; then
+
+                        echo -n "Save changes to origianl file (${forig})? (Y/n) "
+                        if read ans; then
+                            if echo "${ans}y" | grep --quiet -i '^y'; then
+                                if [ ${dos} -eq 0 ]; then
+                                    cat "${f}" | perl -pe 's/[\x0d\x0a]+/\x0a/g;' > "${forig}"
+                                else
+                                    cp -f "${f}" "${forig}"
+                                fi
+                            fi
+                        fi
+
+                    fi
+                fi
+
+                rm -f "${tmp}"
+            fi
+        fi
+
+    done
+fi

@@ -1,0 +1,42 @@
+# Set PATH so it includes user's private bin if it exists
+
+add_to_path ()
+{
+    front=$1
+    shift
+
+    while (( "$#" )); do
+
+        if [ ! -d "$1" ]; then
+            /usr/bin/echo "bash_path: Directory ${1} not found."
+
+        elif [[ "$PATH" =~ (^|:)"${1}"(:|$) ]]; then
+#            /usr/bin/echo "bash_path: Skipping ${1}"
+            false
+
+        else
+
+            if [ $front -eq 1 ]; then
+                PATH="${1}:$PATH"
+            else
+                PATH="$PATH:${1}"
+            fi
+        fi
+
+        shift
+    done
+}
+
+#add_to_path 1 /usr/local/bin/ImageMagick-6.6.3/bin
+
+# Add ~/bin and any subdirectories to the path
+add_to_path 1 $(/usr/bin/find "${HOME}/bin" -type d)
+
+if [ -d "/usr/bin/X11" ]; then
+    add_to_path 1 /usr/bin/X11
+fi
+
+add_to_path 1 /usr/bin
+
+
+export PATH

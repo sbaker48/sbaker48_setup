@@ -1,0 +1,40 @@
+
+# To change the colors of the files in the directory listing, update the dircolors.dat file and then do:
+#
+#        dircolors -b dircolors.dat > ~/.color
+#
+# For an example of what the various color/background color combinations look like, run display_colors.exe located in this directory.
+
+
+
+
+# My current color scheme:
+
+
+# White:		normal
+# Red:			-
+# Green:		
+# Yellow:		
+# Blue:			---
+# Magenta:		-
+# Cyan:			code files
+
+
+# Bold White:	(01;37)
+# Bold Red:	(01;31)	compressed
+# Bold Green:	(01;32)	exe
+# Bold Yellow:	(01;33)	pictures
+# Bold Blue:	(01;34)	dir
+# Bold Magenta: (01;35)
+# Bold Cyan:	(01;36)	sounds	
+
+
+# Bk White:
+# Bk Red:		orphan (01;33;41)	[yellow on red]
+# Bk Green:
+# Bk Yellow:
+# Bk Blue:		sock; door (01;36;44)   [cyan on blue]
+# Bk Magenta:		blk; chr (01;37;45)	[white on magenta]
+# Bk Cyan:		pipe	(01,32,46)	[green on cyan]
+
+

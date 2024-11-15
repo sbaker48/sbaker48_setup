@@ -1,0 +1,64 @@
+#!/bin/bash
+
+site="$1"
+key="$2"
+
+p=
+chars=ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890
+
+if [ -z "$site" ]; then
+    echo -n "Site name: "
+    read site
+fi
+
+if [ -z "$key" ]; then
+    echo -n "Pass key: "
+    stty_orig=`stty -g` # save original terminal setting.
+    stty -echo          # turn-off echoing.
+    read key            # read the password
+    stty $stty_orig     # restore terminal setting.
+fi
+
+s=$(echo "$site" | sed -e 's/.*:\/\///' -e 's/[^\/]*\b\([a-zA-Z0-9]\+\)\.\([a-zA-Z]\+\).*/\L\1.\2/')
+if [ "$s" != "$site" ]; then
+    site="$s"
+    echo $site
+fi
+
+if [ -r ~/.mypass ]; then
+    . ~/.mypass
+fi
+
+len=16
+
+ll=LEN_${site/./_}
+pre=PREFIX_${site/./_}
+add=ADDON_${site/./_}
+
+
+if [ -n "${!ll}" ]; then
+    len=${!ll}
+fi
+if [ -n "${!pre}" ]; then
+    key="${!pre}${key}"
+fi
+
+hash=$(echo -n "${site}${key}" | md5sum | gawk '{print $1}')
+
+i=0
+while [ $i -lt $(($len*2)) ]; do
+    n=$(echo $((0x${hash:$i:2} % 64)))
+    i=$(($i+2))
+    p=${p}${chars:$n:1}
+done
+p=${p}${!add}
+
+echo $p
+
+if which xclip > /dev/null 2>&1; then
+    echo -n $p | xclip -i -selection clipboard
+    echo "(Copied to clipboard)"
+elif [ -e /dev/clipboard ]; then
+    echo -n $p > /dev/clipboard
+    echo "(Copied to clipboard)"
+fi

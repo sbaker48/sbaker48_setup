@@ -1,0 +1,24 @@
+#!/bin/bash
+
+np="/cygdrive/c/WINDOWS/system32/mspaint.exe"
+if [ ! -r "$np" ]; then
+  exit 2
+fi
+
+declare -a args
+
+if [ -z "${*}" ]; then
+    "${np}" &
+else
+    for f in "${@}"; do
+        if [ -n "$f" ]; then
+            if [ "${f:0:1}" = "-" ]; then
+                args[${#args[@]}]="$f"
+            else
+                args[${#args[@]}]=$(cygpath -wa "$f")
+            fi
+        fi
+    done
+
+    "${np}" "${args[@]}" &
+fi

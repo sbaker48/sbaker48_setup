@@ -1,0 +1,87 @@
+#!/bin/bash
+
+hostfile=$(realpath "/etc/hosts")
+myipfile="http://www.beaconheights.net/.myip"
+hostname="home"
+
+linux=
+win=
+kern=$(uname -s)
+
+case "$kern" in
+   Linux*)		linux=1;;
+   CYGWIN_NT-5*)	win=xp;;
+   CYGWIN_NT-6.0*)	win=vista;;
+   CYGWIN_NT-6.1*)	win=win7;;
+   CYGWIN_NT-10.0*)     win=win10;;
+   *)			echo "$0: WARNING: Unknown kernel. Assuming win10"; win=win10;;
+esac
+
+
+if [ ! -r "$hostfile" ]; then
+    echo "$0: Cannot find host file: $hostfile"
+    exit 1
+fi
+
+
+function ping_addr
+{
+    ret=1
+    ip="$1"
+
+    if [ $linux ]; then
+        if ping -c 1 -W 1 "$ip" > /dev/null; then
+            ret=0
+        fi
+    elif [ $win ]; then
+        if ping -n 1 -w 1000 "$ip" > /dev/null; then
+            ret=0
+        fi
+    fi
+
+    return $ret
+}
+
+
+addr=
+if [ -n "$1" ]; then
+    addr="$1"
+else
+    addr=$(wget -q "$myipfile" -O -)
+fi
+
+if [ -z "$addr" ]; then
+    echo "$0: Home IP not found"
+    exit 1
+fi
+
+echo "$0: Setting $hostname => $addr"
+
+if ! ping_addr "$addr"; then
+    echo "$0: Host $addr not reachable."
+    exit 2
+fi
+
+cp -f "$hostfile" /tmp/hosts.bak
+
+grep -v HOME_IP "$hostfile" > /tmp/hosts
+echo "$ip   home                            ## HOME_IP" >> /tmp/hosts
+
+if [ $linux ]; then
+    sudo cp -f /tmp/hosts "$hostfile" || exit 2
+elif [ $win == "xp" ]; then
+    cp -f /tmp/hosts "$hostfile"
+elif [ $win ]; then
+    cygstart --action=runas cp -f /tmp/hosts "$hostfile"
+else
+    cp -f /tmp/hosts "$hostfile"
+fi
+
+if ! ping_addr "$hostname"; then
+    echo "$0: Failed to set $hostname."
+    exit 1
+fi
+
+echo "$0: Done."
+
+rm -f /tmp/hosts
