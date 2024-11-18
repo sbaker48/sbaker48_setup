@@ -27,8 +27,6 @@ add_to_path ()
     done
 }
 
-#add_to_path 1 /usr/local/bin/ImageMagick-6.6.3/bin
-
 # Add ~/bin and any subdirectories to the path
 add_to_path 1 $(/usr/bin/find "${HOME}/bin" -type d)
 
@@ -37,6 +35,5 @@ if [ -d "/usr/bin/X11" ]; then
 fi
 
 add_to_path 1 /usr/bin
-
 
 export PATH

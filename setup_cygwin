@@ -11,3 +11,47 @@ ln -s "$(cygpath --folder 38)"
 ln -s "$(cygpath --folder 42)"
 ln -s "$(realpath $(cygpath --desktop)/../Downloads)"
 
+
+prompt_yn()
+{
+    p=$1
+    d=$2
+    read -p "$p " res
+    if [ -n "$d" ]; then
+        res=${res:-${d}}
+    fi
+    res=${res,,}
+    res=${res:0:1}
+    echo $res
+}
+
+
+r=$(prompt_yn "Install applications? [Yes/no/all]" "y")
+if [[ "$r" == "y" || "$r" == "a" ]]; then
+
+    if [[ "$r" == "a" || $(prompt_yn "Install Chrome? [Yes/no]") == "y" ]]; then
+	    winget install Google.Chrome.EXE
+    fi
+
+    if [[ "$r" == "a" || $(prompt_yn "Install Perl? [Yes/no]") == "y" ]]; then
+	    winget install StrawberryPerl.StrawberryPerl
+    fi
+
+    if [[ "$r" == "a" || $(prompt_yn "Install 7zip? [Yes/no]") == "y" ]]; then
+	    winget install 7zip.7zip
+    fi
+
+    if [[ "$r" == "a" || $(prompt_yn "Install Notepad++? [Yes/no]") == "y" ]]; then
+	    winget install Notepad++.Notepad++
+    fi
+
+    if [[ "$r" == "a" || $(prompt_yn "Install TortoiseGit? [Yes/no]") == "y" ]]; then
+	    winget install TortoiseGit.TortoiseGit
+    fi
+
+    if [[ "$r" == "a" || $(prompt_yn "Install PuTTY? [Yes/no]") == "y" ]]; then
+	    winget install PuTTY.PuTTY
+    fi
+
+fi
+
