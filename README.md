@@ -11,6 +11,3 @@ From Cygwin:
 
 git clone git@github.com:sbaker48/setup.git  
 ./setup/setup_cygwin  
-
-cat "${HOME}/.ssh/id_rsa.pub"  
-Copy to https://github.com/settings/keys
