@@ -9,5 +9,5 @@ winget install Git.Git
 
 From Cygwin:
 
-git clone git@github.com:sbaker48/setup.git  
-./setup/setup_cygwin  
+git clone git@github.com:sbaker48/sbaker48_setup.git  
+./sbaker48_setup/setup_cygwin  
