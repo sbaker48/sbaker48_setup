@@ -1,8 +1,75 @@
 #!/bin/bash
 
+
+## Install cygwin packages
+echo Installing cygwin packages...
+
+curl https://www.cygwin.com/setup-x86_64.exe -O && mv -f setup-x86_64.exe /setup-x86_64.exe
+/setup-x86_64.exe -q -P ssh,vim,gcc-g++,make
+
+echo -n "Waiting for Cygwin Setup to complete."
+sleep 1
+while ps -W | grep setup-x86_64 > /dev/null; do
+    echo -n "."
+    sleep 1
+done
+echo
+sleep 1
+
+
+## Git config
+echo Configuring Git...
+
+if ! which git; then
+    winget install Git.Git
+fi
+
+declare -a arr=("sbaker48@gmail.com" "sbaker@logikos.com")
+arrlen=${#arr[@]}
+
+echo "Use email address:"
+for (( i=0; i<${arrlen}; i++ ));
+do
+    echo "    $i) ${arr[$i]}"
+done
+read -p "Select email > " email_sel
+
+git config --global user.name "Sean Baker"
+git config --global user.email "${arr[${email_sel:-0}]}"
+git config --global core.editor vim
+git config --global core.autocrlf false
+
+
+## Copy files
+echo Copying cygwin files...
+
 for f in ./cygwin/files/.[a-z]* ./cygwin/files/[a-z]*; do
   cp -ri "$f" "${HOME}"
 done
+
+
+## Setup security keys
+echo Setting up security keys...
+
+if [ ! -s "${HOME}/.ssh/id_rsa" ]; then
+    mkdir -p "${HOME}/.ssh"
+    chmod 700 "${HOME}/.ssh"
+    ssh-keygen -t rsa -f "${HOME}/.ssh/id_rsa"
+fi
+
+
+## Cache file credentials
+echo Caching file credentials...
+
+if [ ! -s /etc/nsswitch.conf.bak ]; then cp /etc/nsswitch.conf /etc/nsswitch.conf.bak; fi
+mkpasswd -l -c > /etc/passwd
+mkgroup -l -c > /etc/group
+echo 'passwd: files' > /etc/nsswitch.conf
+echo 'group: files' >> /etc/nsswitch.conf
+
+
+## Setup shortcuts
+echo Setting up shortcuts...
 
 cd ${HOME}
 ln -s "$(cygpath --desktop)"
@@ -11,6 +78,8 @@ ln -s "$(cygpath --folder 38)"
 ln -s "$(cygpath --folder 42)"
 ln -s "$(realpath $(cygpath --desktop)/../Downloads)"
 
+
+## Install common applications
 
 prompt_yn()
 {
