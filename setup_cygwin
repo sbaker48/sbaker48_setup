@@ -24,14 +24,13 @@ if ! which git; then
     winget install Git.Git
 fi
 
-declare -a arr=("sbaker48@gmail.com" "sbaker@logikos.com")
-arrlen=${#arr[@]}
-
 echo "Use email address:"
-for (( i=0; i<${arrlen}; i++ ));
-do
+
+declare -a arr=("sbaker48@gmail.com" "sbaker@logikos.com")
+for i in "${!arr[@]}"; do    
     echo "    $i) ${arr[$i]}"
 done
+
 read -p "Select email > " email_sel
 
 git config --global user.name "Sean Baker"
