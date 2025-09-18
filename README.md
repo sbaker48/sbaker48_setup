@@ -5,12 +5,12 @@ Windows setup
 From CMD prompt:
 
     winget install Cygwin.Cygwin
-    winget install Git.Git  
+    winget install Git.Git
 
 From Cygwin:
 
     git clone git@github.com:sbaker48/sbaker48_setup.git
-    ./sbaker48_setup/setup_cygwin  
+    ./sbaker48_setup/setup_cygwin
 
 From CMD prompt:
 

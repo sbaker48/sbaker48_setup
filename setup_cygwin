@@ -27,7 +27,7 @@ fi
 echo "Use email address:"
 
 declare -a arr=("sbaker48@gmail.com" "sbaker@logikos.com")
-for i in "${!arr[@]}"; do    
+for i in "${!arr[@]}"; do
     echo "    $i) ${arr[$i]}"
 done
 
@@ -98,27 +98,27 @@ r=$(prompt_yn "Install applications? [Yes/no/all]" "y")
 if [[ "$r" == "y" || "$r" == "a" ]]; then
 
     if [[ "$r" == "a" || $(prompt_yn "Install Chrome? [Yes/no]") == "y" ]]; then
-	    winget install Google.Chrome.EXE
+        winget install Google.Chrome.EXE
     fi
 
     if [[ "$r" == "a" || $(prompt_yn "Install Perl? [Yes/no]") == "y" ]]; then
-	    winget install StrawberryPerl.StrawberryPerl
+        winget install StrawberryPerl.StrawberryPerl
     fi
 
     if [[ "$r" == "a" || $(prompt_yn "Install 7zip? [Yes/no]") == "y" ]]; then
-	    winget install 7zip.7zip
+        winget install 7zip.7zip
     fi
 
     if [[ "$r" == "a" || $(prompt_yn "Install Notepad++? [Yes/no]") == "y" ]]; then
-	    winget install Notepad++.Notepad++
+        winget install Notepad++.Notepad++
     fi
 
     if [[ "$r" == "a" || $(prompt_yn "Install TortoiseGit? [Yes/no]") == "y" ]]; then
-	    winget install TortoiseGit.TortoiseGit
+        winget install TortoiseGit.TortoiseGit
     fi
 
     if [[ "$r" == "a" || $(prompt_yn "Install PuTTY? [Yes/no]") == "y" ]]; then
-	    winget install PuTTY.PuTTY
+        winget install PuTTY.PuTTY
     fi
 
 fi
