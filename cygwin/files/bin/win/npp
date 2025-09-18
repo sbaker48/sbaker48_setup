@@ -17,7 +17,7 @@ else
             if [ "${f:0:1}" = "-" ]; then
                 args[${#args[@]}]="$f"
             else
-				rp=$(realpath -L "$f")
+                rp=$(realpath -L "$f")
                 ff=$(cygpath -wa "$rp")
                 args[${#args[@]}]="$ff"
             fi

@@ -9,12 +9,12 @@ win=
 kern=$(uname -s)
 
 case "$kern" in
-   Linux*)		linux=1;;
-   CYGWIN_NT-5*)	win=xp;;
-   CYGWIN_NT-6.0*)	win=vista;;
-   CYGWIN_NT-6.1*)	win=win7;;
+   Linux*)      linux=1;;
+   CYGWIN_NT-5*)    win=xp;;
+   CYGWIN_NT-6.0*)  win=vista;;
+   CYGWIN_NT-6.1*)  win=win7;;
    CYGWIN_NT-10.0*)     win=win10;;
-   *)			echo "$0: WARNING: Unknown kernel. Assuming win10"; win=win10;;
+   *)           echo "$0: WARNING: Unknown kernel. Assuming win10"; win=win10;;
 esac
 
 

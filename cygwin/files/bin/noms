@@ -111,18 +111,18 @@ for f; do
 
 
 # This doesn't work right in Strawbery Perl
-#			if [ $dos = 0 ]; then
-#			    xpr="s/\r$//;"
-#			fi
+#           if [ $dos = 0 ]; then
+#               xpr="s/\r$//;"
+#           fi
 
-			if [ $dos = 0 ]; then
-			    xpr="BEGIN { binmode STDOUT }"
-			else
-				:
-			fi
+            if [ $dos = 0 ]; then
+                xpr="BEGIN { binmode STDOUT }"
+            else
+                :
+            fi
 
             if [ $trim = 0 ]; then
-				:
+                :
             else
                 xpr="${xpr} s/[ \t]*$//g;"
             fi
@@ -139,10 +139,10 @@ for f; do
                 xpr="${xpr} 1 while s/\t+/' ' x (length(\$&)*${tabs} - length(\$\`)%${tabs})/e;"
             fi
 
-			if [ $verbose -gt 0 ]; then
-				echo
-				echo perl -pe \""${xpr}"\"
-			fi
+            if [ $verbose -gt 0 ]; then
+                echo
+                echo perl -pe \""${xpr}"\"
+            fi
 
             /bin/cat "$f" | perl -pe "${xpr}" > "$t" || exit 1
 

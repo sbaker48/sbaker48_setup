@@ -14,9 +14,9 @@ while (<>)
     if ( /:[0-9]*:/ )
     {
         (my $f, my $n) = /^([^:]*):([0-9]*):/;
-     
-		print "$f\n";
-	 
+
+        print "$f\n";
+
         if ( !defined($filelist{$f}) )
         {
             $filelist{$f} = $n;
@@ -25,13 +25,13 @@ while (<>)
     else
     {
         $filelist{$_} = "";
-    }    
+    }
 }
 
 foreach my $f (%filelist)
 {
-	print $f;
-	
+    print $f;
+
     if ( $filelist{$f} )
     {
         chomp( my $ff = qx/cygpath -wa \$(realpath -L "$f")/ );
